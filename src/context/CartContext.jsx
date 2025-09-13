@@ -6,30 +6,44 @@ export const CartContext = createContext()
 export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState([])
   const [cartOn, setCartOn] = useState(false)
+  const [cartPrice, setCartPrice] = useState(0)
 
   const getFromLocalStorage = () => {
-    const cartFromStorage = JSON.parse(localStorage.getItem('carrito'))
-    if (cartFromStorage) {
-      setCart(cartFromStorage)
-    } else {
-      setCart([])
-    }
+    const cartFromStorage = JSON.parse(localStorage.getItem('carrito')) || []
+    setCart(cartFromStorage)
+  }
+
+  const getPriceFromLocalStorage = () => {
+    const priceFromStorage = JSON.parse(localStorage.getItem('cartPrice')) || 0
+    setCartPrice(priceFromStorage)
   }
 
   const addToCart = (products, id) => {
     const productToAdd = products.find((product) => product.id === id)
     if (productToAdd) {
-      if (productToAdd.qty >= 1) {
+      const productInCart = cart.find(
+        (product) => product.id === productToAdd.id
+      )
+      if (productInCart) {
         productToAdd.qty++
         setCart([...cart])
+        setCartPrice(
+          (prevState) => (prevState += parseInt(Math.round(productToAdd.price)))
+        )
         localStorage.setItem('carrito', JSON.stringify(cart))
+        localStorage.setItem('cartPrice', JSON.stringify(cartPrice))
       } else {
         productToAdd.qty = 1
-        setCart([...cart, productToAdd])
+        const nuevosProductos = [...cart, productToAdd]
+        setCart(nuevosProductos)
+        setCartPrice(
+          (prevState) => (prevState += parseInt(Math.round(productToAdd.price)))
+        )
         localStorage.setItem('carrito', JSON.stringify(cart))
+        localStorage.setItem('cartPrice', JSON.stringify(cartPrice))
       }
     } else {
-      console.error('No se pudo encontrar al producto requerido')
+      alert('No encontramos el producto requerido para añadir')
     }
   }
 
@@ -38,12 +52,14 @@ export const CartProvider = ({ children }) => {
     if (productToRemoveQty) {
       if (productToRemoveQty.qty > 1) {
         productToRemoveQty.qty--
-        setCart([...cart])
         localStorage.setItem('carrito', JSON.stringify(cart))
+        localStorage.setItem('cartPrice', JSON.stringify(cartPrice))
+        setCart([...cart])
       } else if (productToRemoveQty.qty === 1) {
         const carritoFiltrado = cart.filter((item) => item.id !== id)
-        setCart(carritoFiltrado)
         localStorage.setItem('carrito', JSON.stringify(carritoFiltrado))
+        localStorage.setItem('cartPrice', JSON.stringify(cartPrice))
+        setCart(carritoFiltrado)
       }
     }
   }
@@ -55,10 +71,48 @@ export const CartProvider = ({ children }) => {
     cart,
     setCart,
     cartOn,
-    setCartOn
+    setCartOn,
+    getPriceFromLocalStorage,
+    cartPrice
   }
 
   return (
     <CartContext.Provider value={contextValue}>{children}</CartContext.Provider>
   )
 }
+//////SOLUCION DE GEMINI
+
+// ... other code and state variables
+
+const addToCart = (products, id) => {
+  const productToAdd = products.find((product) => product.id === id)
+
+  if (productToAdd) {
+    const productInCart = cart.find((product) => product.id === productToAdd.id)
+
+    if (productInCart) {
+      // Create a new cart array to update state immutably
+      const updatedCart = cart.map((item) =>
+        item.id === productToAdd.id ? { ...item, qty: item.qty + 1 } : item
+      )
+      setCart(updatedCart)
+    } else {
+      // Create a new product and new cart array
+      const newProduct = { ...productToAdd, qty: 1 }
+      const newCart = [...cart, newProduct]
+      setCart(newCart)
+    }
+  } else {
+    alert('No encontramos el producto requerido para añadir')
+  }
+}
+
+// Use the useEffect hook to handle side effects
+useEffect(() => {
+  localStorage.setItem('carrito', JSON.stringify(cart))
+
+  // Recalculate and set the cart price here
+  const total = cart.reduce((acc, item) => acc + item.price * item.qty, 0)
+  setCartPrice(Math.round(total))
+  localStorage.setItem('cartPrice', JSON.stringify(Math.round(total)))
+}, [cart]) // The dependency array ensures this runs whenever 'cart' changes

@@ -16,10 +16,6 @@ const ItemListContainer = () => {
   const productsCollectionRef = collection(db, 'products')
 
   useEffect(() => {
-    console.log('item list container render')
-  })
-
-  useEffect(() => {
     getFromLocalStorage()
   }, [])
 

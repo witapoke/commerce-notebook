@@ -8,18 +8,16 @@ import { db } from '../firebase-config'
 import { useContext } from 'react'
 import { ProductsContext } from '../context/ProductsContext'
 import UseDebounce from '../Hooks/UseDebounce'
+import { CartContext } from '../context/CartContext'
 
 const NavBar = () => {
   const [input, setInput] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
   const [searchMessage, setSearchMessage] = useState('')
   const { setProducts } = useContext(ProductsContext)
+  const { getPriceFromLocalStorage, cart } = useContext(CartContext)
 
   const productsCollectionRef = collection(db, 'products')
-
-  useEffect(() => {
-    console.log('navbar render')
-  })
 
   const searchProducts = async (db, searchQuery) => {
     try {
@@ -44,6 +42,10 @@ const NavBar = () => {
   }
 
   const debouncedQuery = UseDebounce(input, 500)
+
+  useEffect(() => {
+    getPriceFromLocalStorage()
+  }, [])
 
   useEffect(() => {
     searchProducts(db, debouncedQuery)
