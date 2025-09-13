@@ -2,7 +2,7 @@ import { CartContext } from '../context/CartContext'
 import '../estilos/Cart.css'
 import { memo, useContext, useEffect } from 'react'
 
-const CartWidget = memo(({ price }) => {
+const CartWidget = ({ price }) => {
   useEffect(() => {
     console.log('cart widget render')
   })
@@ -11,7 +11,7 @@ const CartWidget = memo(({ price }) => {
 
   return (
     <div className='cart-container'>
-      <div className='cart-icon' onClick={() => setCartOn(!cartOn)}>
+      <div className='cart-icon' onClick={() => setCartOn(true)}>
         🛒
       </div>
       <div className='cart-description'>
@@ -20,6 +20,6 @@ const CartWidget = memo(({ price }) => {
       </div>
     </div>
   )
-})
+}
 
-export default CartWidget
+export default memo(CartWidget)

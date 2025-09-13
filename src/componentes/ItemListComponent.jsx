@@ -5,7 +5,7 @@ import { ProductsContext } from '../context/ProductsContext.jsx'
 import { useContext } from 'react'
 
 const ItemListComponent = ({ product }) => {
-  const { addToCart } = useContext(CartContext)
+  const { addToCartByGemini } = useContext(CartContext)
   const { products } = useContext(ProductsContext)
 
   return (
@@ -20,7 +20,7 @@ const ItemListComponent = ({ product }) => {
       </div>
       <button
         className='addToCartBtn'
-        onClick={() => addToCart(products, product.id)}
+        onClick={() => addToCartByGemini(products, product.id)}
       >
         ➕
       </button>
